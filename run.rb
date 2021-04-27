@@ -11,7 +11,6 @@ class Mastermind
   def initialize(turns, length)
     @turns = turns
     @code_length = length
-    @guess = Array.new(@code_length) { 0 }
     @range = (1..6)
     @wrong = true
   end
@@ -32,20 +31,25 @@ class Mastermind
 
   def first_turn
     @guess = [1, 1, 2, 2]
+    @last_guess = @guess
+    display_guess
   end
 
   # => @guess_code = Array.new(4) { rand(@range) }
   # logic for feedback and guess formation
   def guess_code
+    @guess = []
     index = 0
-    @last_guess.each do |guess|
-      @feedback.each do |key|
-        case key
-        when 2
-          p @guess[random(1..4)] = @last_guess[random(1..4)]
-        when 1
-          p @guess[random(1..4)] = @last_guess[random(1..4)]
-        end
+    @feedback.each do |feebak|
+      random = rand(@range)
+      case feebak
+      when 2
+        @guess.insert(index, @last_guess[index])
+        #  keep 1 but move it
+      when 1
+        @guess.insert(index, @last_guess[rand(1..4)])
+      else
+        @guess.insert(index, random)
       end
       index +=1
     end
@@ -53,33 +57,47 @@ class Mastermind
   end
 
   def display_guess
+    puts ''
     puts '~~~~~~~~~~~~~~~~~'
     puts ' Guess code:'
     guess_colors
     puts ''
   end
 
-  def self.keypeg
-    case to_i
+  def keypegs(num)
+    case num
     when 2
-      puts 'black '
+      print ' black '.colorize(
+        :color => :black,
+        :background => :light_black
+        )
     when 1
-      puts 'white '
+      print ' white '.colorize(
+        :color => :light_white,
+        :background => :light_black
+        )
     when 0
-      puts 'empty '
+      print ' empty '.colorize(
+        :color => :red,
+        :background => :light_black
+        )
     end
   end
 
   def guess_colors
     @guess.each do |num|
-      case num
-      when 1 then puts '   yellow'.colorize(:light_yellow)
-      when 2 then puts '   magenta'.colorize(:magenta)
-      when 3 then puts '   red'.colorize(:red)
-      when 4 then puts '   blue'.colorize(:blue)
-      when 5 then puts '   green'.colorize(:green)
-      when 6 then puts '   cyan'.colorize(:cyan)
-      end
+      colors(num)
+    end
+  end
+
+  def colors(num)
+    case num
+    when 1 then puts '   yellow'.colorize(:light_yellow)
+    when 2 then puts '   magenta'.colorize(:magenta)
+    when 3 then puts '   red'.colorize(:red)
+    when 4 then puts '   blue'.colorize(:blue)
+    when 5 then puts '   green'.colorize(:green)
+    when 6 then puts '   cyan'.colorize(:cyan)
     end
   end
 
@@ -94,23 +112,21 @@ class Mastermind
         @feedback.push 2
       elsif @code.include? guess
         @feedback.push 1
+      else
+        @feedback.push 0
       end
       index += 1
     end
-    p @feedback.shuffle!
+    @feedback.shuffle!.each do |num|
+      keypegs(num)
+    end
+    puts ''
   end
 
   def show_code
     puts ' secret code:'
     @code.each do |num|
-      case num
-      when 1 then puts '   yellow'.colorize(:light_yellow)
-      when 2 then puts '   magenta'.colorize(:magenta)
-      when 3 then puts '   red'.colorize(:red)
-      when 4 then puts '   blue'.colorize(:blue)
-      when 5 then puts '   green'.colorize(:green)
-      when 6 then puts '   cyan'.colorize(:cyan)
-      end
+      colors(num)
     end
   end
 
@@ -119,8 +135,8 @@ class Mastermind
   end
 
   def set_code
-    # @code = Array.new(@code_legnth) {rand(1..6)}
-    @code = [1, 3, 4, 6]
+    @code = Array.new(@code_length) {rand(@range)}
+    # @code = [1, 2, 3, 4]
   end
 
   def end_game
@@ -135,5 +151,5 @@ class Mastermind
   end
 end
 
-game = Mastermind.new(12, 4)
+game = Mastermind.new(120, 4)
 game.game_loop
